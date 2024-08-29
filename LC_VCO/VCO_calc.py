@@ -11,21 +11,21 @@ def calculate_missing_parameter():
 
         if not L_nH and C_pF and f_value:
             f_Hz = convert_to_hz(float(f_value), frequency_unit.get())
-            C = float(C_pF) * 1e-12  # Convert pF to F
+            C = float(C_pF) * 1e-12  
             L = 1 / (4 * pi**2 * f_Hz**2 * C)
-            L_nH = L * 1e9  # Convert H to nH
+            L_nH = L * 1e9  
             label_result.set(f"Calculated Inductance: {L_nH:.2f} nH")
             entry_L.insert(0, f"{L_nH:.2f}")
         elif not C_pF and L_nH and f_value:
             f_Hz = convert_to_hz(float(f_value), frequency_unit.get())
-            L = float(L_nH) * 1e-9  # Convert nH to H
+            L = float(L_nH) * 1e-9  
             C = 1 / (4 * pi**2 * f_Hz**2 * L)
-            C_pF = C * 1e12  # Convert F to pF
+            C_pF = C * 1e12  
             label_result.set(f"Calculated Capacitance: {C_pF:.2f} pF")
             entry_C.insert(0, f"{C_pF:.2f}")
         elif not f_value and L_nH and C_pF:
-            L = float(L_nH) * 1e-9  # Convert nH to H
-            C = float(C_pF) * 1e-12  # Convert pF to F
+            L = float(L_nH) * 1e-9  
+            C = float(C_pF) * 1e-12  
             frequency = 1 / (2 * pi * sqrt(L * C))
             unit = frequency_unit.get()
             if unit == "Hz":
@@ -62,22 +62,21 @@ def convert_to_hz(frequency, unit):
         return frequency * 1e9
 
 def calculate_phase_noise():
-    # Placeholder for phase noise calculation logic
+    
     phase_noise_result.set("Phase Noise calculation not yet implemented.")
 
-# Create the main window
+
 root = tk.Tk()
 root.title("LC VCO Calculator")
 
-# Create the notebook (tabs container)
+
 notebook = ttk.Notebook(root)
 notebook.pack(expand=True, fill='both')
 
-# Create the first tab for LC VCO calculations
+
 tab1 = ttk.Frame(notebook)
 notebook.add(tab1, text="LC VCO Calculator")
 
-# Input fields for L, C, f, and Rp in tab1
 label_L = tk.Label(tab1, text="Inductance (L) in nH:")
 label_L.pack()
 entry_L = tk.Entry(tab1)
@@ -93,7 +92,6 @@ label_f.pack()
 entry_f = tk.Entry(tab1)
 entry_f.pack()
 
-# Dropdown menu for frequency units in tab1
 frequency_unit = tk.StringVar(value="Hz")
 label_unit = tk.Label(tab1, text="Select Frequency Unit:")
 label_unit.pack()
@@ -105,14 +103,12 @@ label_Rp.pack()
 entry_Rp = tk.Entry(tab1)
 entry_Rp.pack()
 
-# Button to calculate the missing parameter and gm in tab1
 button_calculate = tk.Button(tab1, text="Calculate", command=calculate_missing_parameter)
 button_calculate.pack()
 
 button_gm = tk.Button(tab1, text="Calculate gm", command=calculate_gm)
 button_gm.pack()
 
-# Labels to show the results in tab1
 label_result = tk.StringVar()
 label_result.set("")
 result_label = tk.Label(tab1, textvariable=label_result)
@@ -121,11 +117,9 @@ result_label.pack()
 label_result_gm = tk.Label(tab1, text="")
 label_result_gm.pack()
 
-# Create the second tab for phase noise calculations
 tab2 = ttk.Frame(notebook)
 notebook.add(tab2, text="Phase Noise")
 
-# Placeholder for phase noise input fields and calculations
 label_phase_noise = tk.Label(tab2, text="Phase Noise Calculations:")
 label_phase_noise.pack()
 
@@ -137,17 +131,14 @@ phase_noise_result.set("")
 result_phase_noise = tk.Label(tab2, textvariable=phase_noise_result)
 result_phase_noise.pack()
 
-# Load and display the topology image in tab2
 try:
-    image = Image.open("topology.png")  # Replace with the path to your topology image
-    #image = image.resize((300, 300), Image.ANTIALIAS)  # Resize the image if needed
+    image = Image.open("topology.png")  
     photo = ImageTk.PhotoImage(image)
     label_image = tk.Label(tab2, image=photo)
-    label_image.image = photo  # Keep a reference to avoid garbage collection
+    label_image.image = photo  
     label_image.pack()
 except Exception as e:
     label_image = tk.Label(tab2, text=f"Error loading image: {e}")
     label_image.pack()
 
-# Run the GUI loop
 root.mainloop()
