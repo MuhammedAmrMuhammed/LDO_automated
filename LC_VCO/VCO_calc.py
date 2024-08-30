@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from math import pi, sqrt
-from PIL import Image, ImageTk
+from math import pi
+#from PIL import Image, ImageTk
 
 def calculate_missing_parameter():
     try:
@@ -11,21 +11,21 @@ def calculate_missing_parameter():
 
         if not L_nH and C_pF and f_value:
             f_Hz = convert_to_hz(float(f_value), frequency_unit.get())
-            C = float(C_pF) * 1e-12  
+            C = float(C_pF) * 1e-12  # Convert pF to F
             L = 1 / (4 * pi**2 * f_Hz**2 * C)
-            L_nH = L * 1e9  
+            L_nH = L * 1e9  # Convert H to nH
             label_result.set(f"Calculated Inductance: {L_nH:.2f} nH")
             entry_L.insert(0, f"{L_nH:.2f}")
         elif not C_pF and L_nH and f_value:
             f_Hz = convert_to_hz(float(f_value), frequency_unit.get())
-            L = float(L_nH) * 1e-9  
+            L = float(L_nH) * 1e-9  # Convert nH to H
             C = 1 / (4 * pi**2 * f_Hz**2 * L)
-            C_pF = C * 1e12  
+            C_pF = C * 1e12  # Convert F to pF
             label_result.set(f"Calculated Capacitance: {C_pF:.2f} pF")
             entry_C.insert(0, f"{C_pF:.2f}")
         elif not f_value and L_nH and C_pF:
-            L = float(L_nH) * 1e-9  
-            C = float(C_pF) * 1e-12  
+            L = float(L_nH) * 1e-9  # Convert nH to H
+            C = float(C_pF) * 1e-12  # Convert pF to F
             frequency = 1 / (2 * pi * sqrt(L * C))
             unit = frequency_unit.get()
             if unit == "Hz":
@@ -51,6 +51,22 @@ def calculate_gm():
     except ValueError:
         label_result_gm.config(text="Invalid input. Please enter a numeric value.")
 
+def calculate_phase_noise():
+    try:
+        k = 1.38e-23  # Boltzmann constant in J/K
+        T = float(entry_T.get())  # Temperature in Kelvin
+        gamma = float(entry_gamma.get())  # Noise factor
+        ISS = float(entry_ISS.get())  # Bias current in mA
+        V0 = float(entry_V0.get())  # Oscillation amplitude in V
+        f0 = convert_to_hz(float(entry_f0.get()), frequency_unit_phase.get())  # Oscillation frequency in Hz
+        Q = float(entry_Q.get())  # Quality factor
+        delta_f = float(entry_delta_f.get())  # Offset frequency in Hz
+
+        phase_noise = (2 * pi * k * T * (gamma + 1)) / ((ISS*1e-3) * V0) * (f0 / (2 * Q * delta_f))
+        phase_noise_result.set(f"Phase Noise: {phase_noise:.2e} dBc/Hz")
+    except ValueError:
+        phase_noise_result.set("Invalid input. Please enter numeric values.")
+
 def convert_to_hz(frequency, unit):
     if unit == "Hz":
         return frequency
@@ -61,18 +77,11 @@ def convert_to_hz(frequency, unit):
     elif unit == "GHz":
         return frequency * 1e9
 
-def calculate_phase_noise():
-    
-    phase_noise_result.set("Phase Noise calculation not yet implemented.")
-
-
 root = tk.Tk()
 root.title("LC VCO Calculator")
 
-
 notebook = ttk.Notebook(root)
 notebook.pack(expand=True, fill='both')
-
 
 tab1 = ttk.Frame(notebook)
 notebook.add(tab1, text="LC VCO Calculator")
@@ -117,11 +126,53 @@ result_label.pack()
 label_result_gm = tk.Label(tab1, text="")
 label_result_gm.pack()
 
+
 tab2 = ttk.Frame(notebook)
 notebook.add(tab2, text="Phase Noise")
 
-label_phase_noise = tk.Label(tab2, text="Phase Noise Calculations:")
-label_phase_noise.pack()
+
+label_T = tk.Label(tab2, text="Temperature (T) in Kelvin:")
+label_T.pack()
+entry_T = tk.Entry(tab2)
+entry_T.pack()
+
+label_gamma = tk.Label(tab2, text="Noise Factor (γ):")
+label_gamma.pack()
+entry_gamma = tk.Entry(tab2)
+entry_gamma.pack()
+
+label_ISS = tk.Label(tab2, text="Bias Current (I_SS) in mA:")
+label_ISS.pack()
+entry_ISS = tk.Entry(tab2)
+entry_ISS.pack()
+
+label_V0 = tk.Label(tab2, text="Oscillation Amplitude (V_0) in V:")
+label_V0.pack()
+entry_V0 = tk.Entry(tab2)
+entry_V0.pack()
+
+label_f0 = tk.Label(tab2, text="Oscillation Frequency (f_0):")
+label_f0.pack()
+entry_f0 = tk.Entry(tab2)
+entry_f0.pack()
+
+# Dropdown menu for frequency units in tab2
+frequency_unit_phase = tk.StringVar(value="Hz")
+label_unit_phase = tk.Label(tab2, text="Select Frequency Unit for f_0:")
+label_unit_phase.pack()
+unit_menu_phase = tk.OptionMenu(tab2, frequency_unit_phase, "Hz", "kHz", "MHz", "GHz")
+unit_menu_phase.pack()
+
+label_Q = tk.Label(tab2, text="Quality Factor (Q):")
+label_Q.pack()
+entry_Q = tk.Entry(tab2)
+entry_Q.pack()
+
+label_delta_f = tk.Label(tab2, text="Offset Frequency (Δf) in Hz:")
+label_delta_f.pack()
+entry_delta_f = tk.Entry(tab2)
+entry_delta_f.pack()
+
 
 button_phase_noise = tk.Button(tab2, text="Calculate Phase Noise", command=calculate_phase_noise)
 button_phase_noise.pack()
@@ -131,14 +182,5 @@ phase_noise_result.set("")
 result_phase_noise = tk.Label(tab2, textvariable=phase_noise_result)
 result_phase_noise.pack()
 
-try:
-    image = Image.open("topology.png")  
-    photo = ImageTk.PhotoImage(image)
-    label_image = tk.Label(tab2, image=photo)
-    label_image.image = photo  
-    label_image.pack()
-except Exception as e:
-    label_image = tk.Label(tab2, text=f"Error loading image: {e}")
-    label_image.pack()
 
 root.mainloop()
